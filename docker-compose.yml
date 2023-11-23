@@ -1,0 +1,50 @@
+version: "3.1"
+services:
+    xampp:
+        image: bitnami/xampp:latest
+        ports:
+            - "80:80"
+            - "443:443"
+            - "3306:3306"
+            - "8080:8080"  # Puerto para el panel de control de XAMPP
+        volumes:
+            - ./PrestamosGdocumental:/opt/lampp/htdocs/PrestamosGdocumental
+            - ./sql:/docker-entrypoint-initdb.d
+            - xampp_data:/bitnami
+        networks:
+            - default
+
+    db:
+        image: mysql
+        ports:
+            - "3307:3306"  # Cambiado para evitar conflictos con XAMPP
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_DATABASE: prestamos
+            MYSQL_PASSWORD: rootpass
+            MYSQL_ROOT_PASSWORD: rootpass 
+        volumes:
+            - ./sql:/docker-entrypoint-initdb.d
+            - db_data:/var/lib/mysql
+        networks:
+            - default
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        links:
+            - db:db
+        ports:
+            - 8000:80
+        environment:
+            MYSQL_USER: root
+            MYSQL_PASSWORD: rootpass
+            MYSQL_ROOT_PASSWORD: rootpass 
+        networks:
+            - default
+
+volumes:
+    xampp_data:
+    db_data:
+
+networks:
+    default:
